@@ -9,12 +9,18 @@ contract FundMeTest is Test {
     // uint256 number = 1;
     FundMe fundMe;
 
+    address USER = makeAddr("user");
+    uint256 constant SEND_VALUE = 0.01 ether;
+    uint256 constant STARTING_BALANCE = 10 ether;
+
     function setUp() external {
         // number += 1;
         // fundMe = new FundMe(0x694AA1769357215DE4FAC081bf1f309aDC325306);
         DeployFundMe deployFundMe = new DeployFundMe();
         fundMe = deployFundMe.run();
         console.log("FundMe deployed to:", address(fundMe));
+
+        vm.deal(USER, STARTING_BALANCE);
     }
 
     // function testDemo() public view {
@@ -57,4 +63,19 @@ contract FundMeTest is Test {
     //     // 4
     //     assertEq(fundMe.getVersion(), 4);
     // }
+
+    function testFundFailsWithoutEnoughETH() public {
+        vm.expectRevert();
+        // uint256 insufficientAmount = 4 * 1e18; // less than 5 USD
+        fundMe.fund{value: 0 * 1e18}();
+    }
+
+    function testFundUpdatesFundedDataStructure() public {
+        vm.prank(USER);
+
+        fundMe.fund{value: SEND_VALUE}();
+        uint256 amountFounded = fundMe.getAddressToAmountFunded(USER);
+
+        assertEq(amountFounded, SEND_VALUE);
+    }
 }
