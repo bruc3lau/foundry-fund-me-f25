@@ -10,7 +10,7 @@ contract FundMeTest is Test {
 
     function setUp() external {
         // number += 1;
-        fundMe = new FundMe();
+        fundMe = new FundMe(0x694AA1769357215DE4FAC081bf1f309aDC325306);
     }
 
     // function testDemo() public view {
@@ -36,5 +36,11 @@ contract FundMeTest is Test {
         console.log(address(this));
         // assertEq(fundMe.i_owner(), msg.sender);
         assertEq(fundMe.i_owner(), address(this));
+    }
+
+    function testPriceFeedVersion() public view {
+        console.log(fundMe.getVersion());
+        // 4
+        assertEq(fundMe.getVersion(), 4);
     }
 }

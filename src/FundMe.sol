@@ -11,28 +11,36 @@ error FoundMe__NotOwner();
 contract FundMe {
     using PriceConverter for uint256;
     // uint256 public myValue = 1;
-
     // uint256 public constant miniMumUsd = 5 * 1e18;
-    uint256 public constant MINIMUM_USD = 5 * 1e18;
 
-    address[] public funders;
     mapping(address => uint256) public addressToAmountFunded;
+    address[] public funders;
 
-    address public i_owner;
+    address public immutable i_owner;
+    uint256 public constant MINIMUM_USD = 5 * 1e18;
+    AggregatorV3Interface public s_priceFeed;
 
-    constructor() {
+    constructor(address priceFeed) {
         i_owner = msg.sender;
+        s_priceFeed = AggregatorV3Interface(priceFeed);
     }
 
     function fund() public payable {
         // myValue = myValue + 2;
         require(
             // getConversionRate(msg.value) >= miniMumUsd,
-            msg.value.getConversionRate() >= MINIMUM_USD,
+            msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD,
             "didnot send enough ETH!"
         );
         funders.push(msg.sender);
         addressToAmountFunded[msg.sender] += msg.value;
+    }
+
+    function getVersion() public view returns (uint256) {
+        // return
+        //     AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306)
+        //         .version();
+        return s_priceFeed.version();
     }
 
     // uint256 public test;
@@ -53,14 +61,11 @@ contract FundMe {
         }
         // reset
         // funders = new address[](0);
-
-        // //transfer
+        //transfer
         // payable(msg.sender).transfer(address(this).balance);
-
-        // //send
+        //send
         // bool sendSucess = payable(msg.sender).send(address(this).balance);
         // require(sendSucess, "Send failed");
-
         //call
         // (bool callSucess, bytes memory dataReturned) = payable(msg.sender).call{
         (bool callSucess, ) = payable(msg.sender).call{
