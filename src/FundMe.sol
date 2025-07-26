@@ -43,6 +43,11 @@ contract FundMe {
         return s_priceFeed.version();
     }
 
+    function getPrice() public view returns (uint256) {
+        (, int256 price, , , ) = s_priceFeed.latestRoundData();
+        return uint256(price);
+    }
+
     // uint256 public test;
 
     // function testFunc() public payable {
@@ -79,22 +84,22 @@ contract FundMe {
         _;
     }
 
-    int256 public getEthPrice;
-
-    function getPrice() internal {
-        //Address 0x694AA1769357215DE4FAC081bf1f309aDC325306
-        //ABI
-        AggregatorV3Interface feed = AggregatorV3Interface(
-            0x694AA1769357215DE4FAC081bf1f309aDC325306
-        );
-        // (
-        //     uint80 roundId,
-        //     int256 answer,
-        //     uint256 startedAt,
-        //     uint256 updatedAt,
-        //     uint80 answeredInRound
-        // ) = feed.latestRoundData();
-        (, int256 price, , , ) = feed.latestRoundData();
-        getEthPrice = price;
-    }
+    // int256 public getEthPrice;
+    // function getPrice() internal {
+    // function getPrice() public {
+    //     //Address 0x694AA1769357215DE4FAC081bf1f309aDC325306
+    //     //ABI
+    //     AggregatorV3Interface feed = AggregatorV3Interface(
+    //         0x694AA1769357215DE4FAC081bf1f309aDC325306
+    //     );
+    //     // (
+    //     //     uint80 roundId,
+    //     //     int256 answer,
+    //     //     uint256 startedAt,
+    //     //     uint256 updatedAt,
+    //     //     uint80 answeredInRound
+    //     // ) = feed.latestRoundData();
+    //     (, int256 price, , , ) = feed.latestRoundData();
+    //     getEthPrice = price;
+    // }
 }

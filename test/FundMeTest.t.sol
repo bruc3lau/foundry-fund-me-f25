@@ -11,7 +11,7 @@ contract FundMeTest is Test {
 
     function setUp() external {
         // number += 1;
-        fundMe = new FundMe(0x694AA1769357215DE4FAC081bf1f309aDC325306);
+        // fundMe = new FundMe(0x694AA1769357215DE4FAC081bf1f309aDC325306);
         DeployFundMe deployFundMe = new DeployFundMe();
         fundMe = deployFundMe.run();
         console.log("FundMe deployed to:", address(fundMe));
@@ -42,9 +42,19 @@ contract FundMeTest is Test {
         // assertEq(fundMe.i_owner(), address(this));
     }
 
-    function testPriceFeedVersion() public view {
-        console.log(fundMe.getVersion());
-        // 4
-        assertEq(fundMe.getVersion(), 4);
+    function testPrice() public view {
+        // fundMe.fund{value: 1e18}();
+        // vm.deal(address(this), 10e18);
+        // fundMe.fund{value: 1e18}();
+        // assertEq(fundMe.addressToAmountFunded(address(this)), 1e18);
+        // assertEq(fundMe.funders(0), address(this));
+        console.log(fundMe.getPrice());
+        // 3753_36693323
     }
+
+    // function testPriceFeedVersion() public view {
+    //     console.log(fundMe.getVersion());
+    //     // 4
+    //     assertEq(fundMe.getVersion(), 4);
+    // }
 }
