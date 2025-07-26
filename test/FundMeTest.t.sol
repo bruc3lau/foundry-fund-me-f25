@@ -19,7 +19,8 @@ contract FundMeTest is Test {
         DeployFundMe deployFundMe = new DeployFundMe();
         fundMe = deployFundMe.run();
         console.log("FundMe deployed to:", address(fundMe));
-
+        console.log("FundMe owner:", fundMe.getOwner());
+        console.log("FundMe User:", USER);
         vm.deal(USER, STARTING_BALANCE);
     }
 
@@ -41,10 +42,10 @@ contract FundMeTest is Test {
     }
 
     function testOwnerIsMsgSender() public view {
-        console.log(fundMe.i_owner());
-        console.log(msg.sender);
-        console.log(address(this));
-        assertEq(fundMe.i_owner(), msg.sender);
+        console.log("FundMe owner:", fundMe.getOwner());
+        console.log("Msg.sender:", msg.sender);
+        console.log("Address(this):", address(this));
+        assertEq(fundMe.getOwner(), msg.sender);
         // assertEq(fundMe.i_owner(), address(this));
     }
 
@@ -58,11 +59,11 @@ contract FundMeTest is Test {
         // 3753_36693323
     }
 
-    // function testPriceFeedVersion() public view {
-    //     console.log(fundMe.getVersion());
-    //     // 4
-    //     assertEq(fundMe.getVersion(), 4);
-    // }
+    function testPriceFeedVersion() public view {
+        console.log(fundMe.getVersion());
+        // 4
+        assertEq(fundMe.getVersion(), 4);
+    }
 
     function testFundFailsWithoutEnoughETH() public {
         vm.expectRevert();
@@ -77,5 +78,77 @@ contract FundMeTest is Test {
         uint256 amountFounded = fundMe.getAddressToAmountFunded(USER);
 
         assertEq(amountFounded, SEND_VALUE);
+    }
+
+    modifier funded() {
+        vm.prank(USER);
+        fundMe.fund{value: SEND_VALUE}();
+        console.log("Funded with:", SEND_VALUE);
+        _;
+    }
+
+    function testOnlyOwnerCanWithdraw() public funded {
+        console.log("Owner:", fundMe.getOwner());
+
+        vm.prank(USER);
+        vm.expectRevert();
+        fundMe.withdraw();
+
+        vm.startPrank(fundMe.getOwner());
+        fundMe.withdraw();
+        vm.stopPrank();
+
+        uint256 balanceAfter = address(fundMe).balance;
+        assertEq(balanceAfter, 0);
+    }
+
+    function testWithDrawWithASingleFunder() public funded {
+        uint256 balanceBefore = address(fundMe).balance;
+        console.log("Balance before withdraw:", balanceBefore);
+
+        vm.startPrank(fundMe.getOwner());
+        fundMe.withdraw();
+        vm.stopPrank();
+
+        uint256 balanceAfter = address(fundMe).balance;
+        console.log("Balance after withdraw:", balanceAfter);
+        assertEq(balanceAfter, 0);
+    }
+
+    function testWithdrawFromMultipleFunders() public funded {
+        uint256 numberOfFunders = 10;
+        for (uint256 i = 0; i < numberOfFunders; i++) {
+            // vm.prank(address(uint160(i + 1))); // Prank with different addresses
+            hoax(address(uint160(i + 1)), SEND_VALUE);
+            fundMe.fund{value: SEND_VALUE}();
+            console.log(
+                "Funded by:",
+                address(uint160(i + 1)),
+                "with amount:",
+                SEND_VALUE
+            );
+        }
+
+        uint256 startingOwnerBalance = fundMe.getOwner().balance;
+        uint256 startingFundMeBalance = address(fundMe).balance;
+
+        // vm.prank(fundMe.getOwner());
+        // fundMe.withdraw();
+
+        vm.startPrank(fundMe.getOwner());
+        fundMe.withdraw();
+        vm.stopPrank();
+
+        uint256 endingOwnerBalance = fundMe.getOwner().balance;
+        uint256 endingFundMeBalance = address(fundMe).balance;
+        console.log("Starting Owner Balance:", startingOwnerBalance);
+        console.log("Ending Owner Balance:", endingOwnerBalance);
+        console.log("Starting FundMe Balance:", startingFundMeBalance);
+        console.log("Ending FundMe Balance:", endingFundMeBalance);
+
+        uint256 ownerGetFounded = endingOwnerBalance - startingOwnerBalance;
+        console.log("Owner got funded:", ownerGetFounded);
+        assertEq(ownerGetFounded, startingFundMeBalance);
+        assertEq(endingFundMeBalance, 0);
     }
 }

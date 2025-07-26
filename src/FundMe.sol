@@ -16,7 +16,7 @@ contract FundMe {
     mapping(address => uint256) private s_addressToAmountFunded;
     address[] private s_funders;
 
-    address public immutable i_owner;
+    address private immutable i_owner;
     uint256 public constant MINIMUM_USD = 5 * 1e18;
     AggregatorV3Interface public s_priceFeed;
 
@@ -48,11 +48,9 @@ contract FundMe {
         return uint256(price);
     }
 
-    // uint256 public test;
-
-    // function testFunc() public payable {
-    //     test = msg.value.getConversionRate2();
-    // }
+    function getOwner() public view returns (address) {
+        return i_owner;
+    }
 
     function withdraw() public onlyOwner {
         // require(owner == msg.sender, "Must by owner");
@@ -84,6 +82,30 @@ contract FundMe {
         _;
     }
 
+    fallback() external payable {
+        fund();
+    }
+
+    receive() external payable {
+        fund();
+    }
+
+    function getAddressToAmountFunded(
+        address funder
+    ) public view returns (uint256) {
+        return s_addressToAmountFunded[funder];
+    }
+
+    function getFunder(uint256 index) public view returns (address) {
+        return s_funders[index];
+    }
+
+    // uint256 public test;
+
+    // function testFunc() public payable {
+    //     test = msg.value.getConversionRate2();
+    // }
+
     // int256 public getEthPrice;
     // function getPrice() internal {
     // function getPrice() public {
@@ -102,22 +124,4 @@ contract FundMe {
     //     (, int256 price, , , ) = feed.latestRoundData();
     //     getEthPrice = price;
     // }
-
-    fallback() external payable {
-        fund();
-    }
-
-    receive() external payable {
-        fund();
-    }
-
-    function getAddressToAmountFunded(
-        address funder
-    ) public view returns (uint256) {
-        return s_addressToAmountFunded[funder];
-    }
-
-    function getFunder(uint256 index) public view returns (address) {
-        return s_funders[index];
-    }
 }
