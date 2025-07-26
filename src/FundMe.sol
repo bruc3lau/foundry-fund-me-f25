@@ -12,21 +12,23 @@ contract FundMe {
     using PriceConverter for uint256;
     // uint256 public myValue = 1;
 
-    uint256 public constant miniMumUsd = 5 * 1e18;
+    // uint256 public constant miniMumUsd = 5 * 1e18;
+    uint256 public constant MINIMUM_USD = 5 * 1e18;
+
     address[] public funders;
     mapping(address => uint256) public addressToAmountFunded;
 
-    address public owner;
+    address public i_owner;
 
     constructor() {
-        owner = msg.sender;
+        i_owner = msg.sender;
     }
 
     function fund() public payable {
         // myValue = myValue + 2;
         require(
             // getConversionRate(msg.value) >= miniMumUsd,
-            msg.value.getConversionRate() >= miniMumUsd,
+            msg.value.getConversionRate() >= MINIMUM_USD,
             "didnot send enough ETH!"
         );
         funders.push(msg.sender);
@@ -68,7 +70,7 @@ contract FundMe {
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Sender is not owner");
+        require(msg.sender == i_owner, "Sender is not owner");
         _;
     }
 
