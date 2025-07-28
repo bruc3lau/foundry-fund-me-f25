@@ -52,6 +52,24 @@ contract FundMe {
         return i_owner;
     }
 
+    function cheaperWithdraw() public onlyOwner {
+        //read from storage once
+        uint256 fundersLength = s_funders.length;
+        for (
+            uint256 funderIndex = 0;
+            funderIndex < fundersLength;
+            funderIndex++
+        ) {
+            address funder = s_funders[funderIndex];
+            s_addressToAmountFunded[funder] = 0;
+        }
+        s_funders = new address[](0);
+        (bool callSucess, ) = payable(msg.sender).call{
+            value: address(this).balance
+        }("");
+        require(callSucess, "Call failed");
+    }
+
     function withdraw() public onlyOwner {
         // require(owner == msg.sender, "Must by owner");
         for (
@@ -63,7 +81,7 @@ contract FundMe {
             s_addressToAmountFunded[funder] = 0;
         }
         // reset
-        // funders = new address[](0);
+        s_funders = new address[](0);
         //transfer
         // payable(msg.sender).transfer(address(this).balance);
         //send
@@ -71,10 +89,10 @@ contract FundMe {
         // require(sendSucess, "Send failed");
         //call
         // (bool callSucess, bytes memory dataReturned) = payable(msg.sender).call{
-        (bool callSucess, ) = payable(msg.sender).call{
+        (bool callSuccess, ) = payable(msg.sender).call{
             value: address(this).balance
         }("");
-        require(callSucess, "Call failed");
+        require(callSuccess, "Call failed");
     }
 
     modifier onlyOwner() {
